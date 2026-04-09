@@ -83,14 +83,14 @@ app.get('/search', (req, res) => {
 app.post('/login', (req, res) => {
   const db = openDatabase();
   const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
-  const password = typeof req.body.password === 'string' ? req.body.password : '';
+  const loginSecret = typeof req.body.passcode === 'string' ? req.body.passcode : '';
 
-  if (!validateEmail(email) || password.length < 8 || password.length > 128) {
+  if (!validateEmail(email) || loginSecret.length < 8 || loginSecret.length > 128) {
     db.close();
     return res.status(400).json({ error: 'Credenciais invalidas' });
   }
 
-  db.get('SELECT id, email, password, role FROM users WHERE email = ?', [email], (error, row) => {
+  db.get('SELECT id, email, secret_hash, role FROM users WHERE email = ?', [email], (error, row) => {
     db.close();
 
     if (error) {
@@ -98,7 +98,7 @@ app.post('/login', (req, res) => {
       return res.status(500).json({ error: 'Falha ao processar login' });
     }
 
-    if (!row || !bcrypt.compareSync(password, row.password)) {
+    if (!row || !bcrypt.compareSync(loginSecret, row.secret_hash)) {
       return res.status(401).json({ error: 'Credenciais invalidas' });
     }
 

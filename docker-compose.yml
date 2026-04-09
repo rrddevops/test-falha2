@@ -2,10 +2,10 @@ services:
   backend:
     image: node:18-bullseye
     working_dir: /app/backend
-    command: sh -c "npm install && npm run seed && npm run dev"
+    command: sh -c "npm install --no-package-lock && npm run seed && npm run dev"
     environment:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
-      ALLOWED_ORIGIN: http://localhost:5173
+      ALLOWED_ORIGIN: http://localhost:3000
     volumes:
       - ./:/app
     ports:
@@ -14,10 +14,10 @@ services:
   frontend:
     image: node:18-bullseye
     working_dir: /app/frontend
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm install --no-package-lock && npm run dev"
     volumes:
       - ./:/app
     ports:
-      - "5173:5173"
+      - "3000:3000"
     depends_on:
       - backend

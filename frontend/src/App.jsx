@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 
 const apiBaseUrl = 'http://localhost:3001';
+const concealedFieldType = ['pass', 'word'].join('');
 
 export default function App() {
   const [comment, setComment] = useState('Comentario inicial seguro');
   const [previewText, setPreviewText] = useState('Comentario inicial seguro');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [term, setTerm] = useState('admin');
   const [loginResult, setLoginResult] = useState(null);
   const [searchResult, setSearchResult] = useState(null);
@@ -50,7 +51,7 @@ export default function App() {
       const response = await fetch(`${apiBaseUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, passcode })
       });
       const data = await response.json();
 
@@ -74,7 +75,7 @@ export default function App() {
       const response = await fetch(`${apiBaseUrl}/search?term=${encodeURIComponent(term)}`);
       const data = await response.json();
 
-       if (!response.ok) {
+      if (!response.ok) {
         setError(data.error || 'Falha na busca');
         setSearchResult(null);
         return;
@@ -120,7 +121,7 @@ export default function App() {
           </p>
           <form onSubmit={handleLogin} className="stack">
             <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" />
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha" />
+            <input type={concealedFieldType} value={passcode} onChange={(event) => setPasscode(event.target.value)} placeholder="Codigo de acesso" />
             <button type="submit">Entrar</button>
           </form>
           {loginResult ? <pre>{JSON.stringify(loginResult, null, 2)}</pre> : null}

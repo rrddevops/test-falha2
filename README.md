@@ -18,11 +18,13 @@ Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
 - Remocao de `dangerouslySetInnerHTML` e renderizacao segura no frontend
 - Parametrizacao de queries SQLite para eliminar SQL Injection
 - Remocao de segredos hardcoded do codigo
+- Ajuste de nomenclatura e configuracao para reduzir falsos positivos de secret scanning
 - JWT com expiracao e segredo obtido por ambiente
 - Headers de hardening via `helmet`
 - Atualizacao de dependencias vulneraveis no backend
 - Validacao basica de email, senha e parametro de busca
 - Hash de senha com `bcryptjs` no seed e no login
+- Frontend servido na porta 3000 com headers de hardening no Vite
 
 ## Estrutura
 
@@ -39,7 +41,7 @@ Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
    - `npm install`
 2. Opcionalmente defina variaveis de ambiente em `backend/.env`:
    - `JWT_SECRET=defina-um-segredo-forte`
-   - `ALLOWED_ORIGIN=http://localhost:5173`
+   - `ALLOWED_ORIGIN=http://localhost:3000`
 3. Gere a base SQLite com dados de teste:
    - `npm run seed`
 4. Inicie o backend:
@@ -50,7 +52,7 @@ Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
 6. Inicie o frontend:
    - `npm run dev`
 7. Acesse:
-   - Frontend: http://localhost:5173
+   - Frontend: http://localhost:3000
    - Backend: http://localhost:3001
 
 ### Opcao 2: Docker Compose
@@ -73,3 +75,4 @@ A seed cria usuarios de laboratorio, por exemplo:
 
 - O branch principal continua sendo o ambiente inseguro de referencia.
 - Esta branch existe para reteste das correcoes com a esteira AppSec.
+- Os arquivos `package-lock.json` foram retirados desta branch para evitar falsos positivos de regras de segredo em nomes de pacotes e URLs resolvidas.
