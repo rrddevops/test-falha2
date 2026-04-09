@@ -1,0 +1,149 @@
+:root {
+  color-scheme: light;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 102, 0.35), transparent 32%),
+    linear-gradient(135deg, #f6efe4 0%, #f3d7bf 48%, #e08f62 100%);
+  color: #1f130c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.85rem 1.2rem;
+  background: #1f130c;
+  color: #fff7f0;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid rgba(31, 19, 12, 0.2);
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 250, 245, 0.75);
+}
+
+pre {
+  overflow: auto;
+  border-radius: 18px;
+  padding: 1rem;
+  background: #22150e;
+  color: #fff7f0;
+}
+
+.page-shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.hero {
+  padding: 2rem;
+  border-radius: 28px;
+  background: rgba(255, 248, 240, 0.68);
+  box-shadow: 0 20px 80px rgba(103, 48, 19, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.eyebrow {
+  margin: 0 0 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.85rem;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+.lead {
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.panel {
+  padding: 1.25rem;
+  border-radius: 24px;
+  background: rgba(255, 250, 245, 0.82);
+  box-shadow: 0 16px 48px rgba(103, 48, 19, 0.1);
+}
+
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.preview-box {
+  min-height: 120px;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: #fff7f0;
+  border: 1px dashed rgba(31, 19, 12, 0.35);
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.user-list li {
+  padding: 0.9rem;
+  border-radius: 18px;
+  background: rgba(232, 199, 173, 0.35);
+}
+
+.user-list span {
+  display: block;
+  margin: 0.2rem 0 0.45rem;
+  color: rgba(31, 19, 12, 0.72);
+}
+
+.error-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(140, 15, 15, 0.12);
+  border: 1px solid rgba(140, 15, 15, 0.3);
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    width: min(100% - 1rem, 1120px);
+    padding-top: 1rem;
+  }
+
+  .hero,
+  .panel {
+    border-radius: 20px;
+  }
+}
