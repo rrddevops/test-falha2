@@ -9,7 +9,7 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (email, password, role, bio) VALUES
-  ('admin@example.com', 'admin123', 'admin', 'Administrador com acesso total.'),
-  ('user@example.com', 'password', 'user', 'Usuario comum do laboratorio.'),
-  ('analyst@example.com', 'qwerty', 'analyst', 'Perfil usado para testes de busca.'),
-  ('xss@example.com', '123456', 'user', '<img src=x onerror="alert(''seed-xss'')">');
+  ('admin@example.com', '__ADMIN_PASSWORD_HASH__', 'admin', 'Administrador com acesso total.'),
+  ('user@example.com', '__USER_PASSWORD_HASH__', 'user', 'Usuario comum do laboratorio.'),
+  ('analyst@example.com', '__ANALYST_PASSWORD_HASH__', 'analyst', 'Perfil usado para testes de busca.'),
+  ('xss@example.com', '__XSS_PASSWORD_HASH__', 'user', 'Perfil de demonstracao com bio segura.');

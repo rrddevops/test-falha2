@@ -3,32 +3,20 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const _ = require('lodash');
-const axios = require('axios');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const helmet = require('helmet');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = 3001;
 const databasePath = path.join(__dirname, '..', 'database', 'lab.db');
+const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:5173';
 
-// VULNERABILIDADE INTENCIONAL: segredo fraco e sem rotacao.
-const JWT_SECRET = '123456';
-
-// VULNERABILIDADE INTENCIONAL: credenciais e tokens hardcoded para disparar secret scanning.
-const DATABASE_PASSWORD = 'SuperSecretPassword123!';
-const FAKE_AWS_ACCESS_KEY = 'AKIAIOSFODNN7EXAMPLE';
-const FAKE_AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
-const FAKE_JWT_SIGNING_KEY = 'jwt-secret-dev-key';
-
-// VULNERABILIDADE INTENCIONAL: dependencias antigas mantidas para laboratorio AppSec.
-// express 4.17.1, lodash 4.17.20, axios 0.21.0 e jsonwebtoken 8.5.1 possuem historico de CVEs.
-void _;
-void axios;
-void DATABASE_PASSWORD;
-void FAKE_AWS_ACCESS_KEY;
-void FAKE_AWS_SECRET_KEY;
-void FAKE_JWT_SIGNING_KEY;
-
-app.use(cors());
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,8 +24,21 @@ function openDatabase() {
   return new sqlite3.Database(databasePath);
 }
 
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', insecure: true });
+  res.json({ status: 'ok', insecure: false });
 });
 
 app.get('/users', (req, res) => {
@@ -57,71 +58,77 @@ app.get('/users', (req, res) => {
 
 app.get('/search', (req, res) => {
   const db = openDatabase();
-  const term = req.query.term || '';
+  const term = typeof req.query.term === 'string' ? req.query.term.trim() : '';
 
-  // VULNERABILIDADE INTENCIONAL: SQL Injection via concatenacao direta.
-  const query = "SELECT id, email, role, bio FROM users WHERE email LIKE '%" + term + "%' OR role LIKE '%" + term + "%';";
+  if (term.length > 100) {
+    db.close();
+    return res.status(400).json({ error: 'Parametro de busca invalido' });
+  }
 
-  console.log('Executando busca insegura:', query);
+  const query = 'SELECT id, email, role, bio FROM users WHERE email LIKE ? OR role LIKE ?';
+  const likeTerm = `%${term}%`;
 
-  db.all(query, [], (error, rows) => {
+  db.all(query, [likeTerm, likeTerm], (error, rows) => {
     db.close();
 
     if (error) {
-      console.log('Erro na busca:', error.message);
-      return res.status(500).json({ error: error.message, executedQuery: query });
+      console.error('Erro na busca:', error.message);
+      return res.status(500).json({ error: 'Falha ao executar busca' });
     }
 
-    return res.json({ query, results: rows });
+    return res.json({ results: rows });
   });
 });
 
 app.post('/login', (req, res) => {
   const db = openDatabase();
-  const email = req.body.email || '';
-  const password = req.body.password || '';
+  const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
 
-  // VULNERABILIDADE INTENCIONAL: nenhuma validacao de email/senha e query concatenada.
-  const query = "SELECT id, email, role FROM users WHERE email = '" + email + "' AND password = '" + password + "'";
+  if (!validateEmail(email) || password.length < 8 || password.length > 128) {
+    db.close();
+    return res.status(400).json({ error: 'Credenciais invalidas' });
+  }
 
-  console.log('Tentativa de login insegura:', email, password);
-  console.log('Query de login insegura:', query);
-
-  db.get(query, [], (error, row) => {
+  db.get('SELECT id, email, password, role FROM users WHERE email = ?', [email], (error, row) => {
     db.close();
 
     if (error) {
-      console.log('Erro no login:', error.message);
-      return res.status(500).json({ error: error.message, executedQuery: query });
+      console.error('Erro no login:', error.message);
+      return res.status(500).json({ error: 'Falha ao processar login' });
     }
 
-    if (!row) {
-      return res.status(401).json({ error: 'Credenciais invalidas', executedQuery: query });
+    if (!row || !bcrypt.compareSync(password, row.password)) {
+      return res.status(401).json({ error: 'Credenciais invalidas' });
     }
 
-    // VULNERABILIDADE INTENCIONAL: JWT sem expiracao e com segredo fraco.
-    const token = jwt.sign({ id: row.id, email: row.email, role: row.role }, JWT_SECRET);
+    const token = jwt.sign(
+      { id: row.id, email: row.email, role: row.role },
+      jwtSecret,
+      { expiresIn: '1h', issuer: 'appsec-lab' }
+    );
 
     return res.json({
       message: 'Login realizado',
       token,
-      profile: row,
-      note: 'Token emitido sem exp e com segredo fraco de proposito'
+      profile: { id: row.id, email: row.email, role: row.role }
     });
   });
 });
 
 app.post('/comments/preview', (req, res) => {
-  const comment = req.body.comment || '';
+  const comment = typeof req.body.comment === 'string' ? req.body.comment : '';
 
-  // VULNERABILIDADE INTENCIONAL: backend ecoa HTML bruto sem saneamento.
-  res.json({ rawHtml: comment, stored: false });
+  if (comment.length > 1000) {
+    return res.status(400).json({ error: 'Comentario excede o tamanho permitido' });
+  }
+
+  res.json({ previewText: escapeHtml(comment), stored: false });
 });
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    // VULNERABILIDADE INTENCIONAL: logs simples, sem trilha de auditoria estruturada.
-    console.log(`Backend inseguro escutando em http://localhost:${PORT}`);
+    console.log(`Backend protegido escutando em http://localhost:${PORT}`);
   });
 }
 

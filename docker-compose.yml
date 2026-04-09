@@ -3,6 +3,9 @@ services:
     image: node:18-bullseye
     working_dir: /app/backend
     command: sh -c "npm install && npm run seed && npm run dev"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      ALLOWED_ORIGIN: http://localhost:5173
     volumes:
       - ./:/app
     ports:
