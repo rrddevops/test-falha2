@@ -1,8 +1,8 @@
-# Projeto fullstack para reteste AppSec
+# Projeto propositalmente vulneravel
 
-Este branch contem uma versao corrigida do laboratorio, preparada para reteste das validacoes AppSec.
+Projeto inseguro para fins educacionais/teste.
 
-O branch principal vulneravel continua sendo a referencia para testes negativos. Esta branch aplica mitigacoes para validar reducao dos findings em ferramentas de:
+Este repositorio contem uma aplicacao fullstack React + Express + SQLite criada intencionalmente com falhas de seguranca para validar ferramentas de:
 
 - SAST
 - DAST
@@ -11,26 +11,29 @@ O branch principal vulneravel continua sendo a referencia para testes negativos.
 
 ## Aviso de uso
 
-Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
+Projeto propositalmente vulneravel. Use apenas em ambiente controlado, laboratorio local ou ambiente isolado. Nao publique em producao e nao exponha a internet.
 
-## Correções aplicadas neste branch
+## Vulnerabilidades incluidas
 
-- Remocao de `dangerouslySetInnerHTML` e renderizacao segura no frontend
-- Parametrizacao de queries SQLite para eliminar SQL Injection
-- Remocao de segredos hardcoded do codigo
-- Ajuste de nomenclatura e configuracao para reduzir falsos positivos de secret scanning
-- JWT com expiracao e segredo obtido por ambiente
-- Headers de hardening via `helmet`
-- Atualizacao de dependencias vulneraveis no backend
-- Validacao basica de email, senha e parametro de busca
-- Hash de senha com `bcryptjs` no seed e no login
-- Frontend servido na porta 3000 com headers de hardening no Vite
+- XSS no frontend usando `dangerouslySetInnerHTML` sem sanitizacao
+- SQL Injection no backend com concatenacao direta em query SQL
+- Dependencias antigas com CVEs conhecidos:
+  - express 4.17.1
+  - lodash 4.17.20
+  - axios 0.21.0
+  - jsonwebtoken 8.5.1
+- Credenciais expostas no codigo
+- JWT com segredo fraco e sem expiracao
+- Falta de validacao de input
+- Ausencia de protecao CSRF
+- Logs simples sem auditoria
+- Cobertura de testes quase inexistente
 
 ## Estrutura
 
-- `/frontend`: aplicacao React com renderizacao segura
-- `/backend`: API Express com consultas parametrizadas e headers de protecao
-- `/database`: seed SQL com hashes de senha gerados em runtime
+- `/frontend`: aplicacao React vulneravel a XSS
+- `/backend`: API Express vulneravel a SQL Injection e configuracoes inseguras
+- `/database`: seed SQL e banco SQLite gerado localmente
 
 ## Como rodar localmente
 
@@ -39,20 +42,17 @@ Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
 1. Instale dependencias do backend:
    - `cd backend`
    - `npm install`
-2. Opcionalmente defina variaveis de ambiente em `backend/.env`:
-   - `JWT_SECRET=defina-um-segredo-forte`
-   - `ALLOWED_ORIGIN=http://localhost:3000`
-3. Gere a base SQLite com dados de teste:
+2. Gere a base SQLite com dados de teste:
    - `npm run seed`
-4. Inicie o backend:
+3. Inicie o backend:
    - `npm run dev`
-5. Em outro terminal, instale dependencias do frontend:
+4. Em outro terminal, instale dependencias do frontend:
    - `cd frontend`
    - `npm install`
-6. Inicie o frontend:
+5. Inicie o frontend:
    - `npm run dev`
-7. Acesse:
-   - Frontend: http://localhost:3000
+6. Acesse:
+   - Frontend: http://localhost:5173
    - Backend: http://localhost:3001
 
 ### Opcao 2: Docker Compose
@@ -67,12 +67,12 @@ Use apenas em ambiente controlado, laboratorio local ou ambiente isolado.
 
 A seed cria usuarios de laboratorio, por exemplo:
 
-- admin@example.com / AdminPass!2026
-- user@example.com / UserPass!2026
-- analyst@example.com / AnalystPass!2026
+- admin@example.com / admin123
+- user@example.com / password
+- analyst@example.com / qwerty
 
 ## Observacoes
 
-- O branch principal continua sendo o ambiente inseguro de referencia.
-- Esta branch existe para reteste das correcoes com a esteira AppSec.
-- Os arquivos `package-lock.json` foram retirados desta branch para evitar falsos positivos de regras de segredo em nomes de pacotes e URLs resolvidas.
+- O backend mantem comentarios no codigo indicando que as falhas sao intencionais.
+- O frontend expoe HTML injetado sem qualquer sanitizacao.
+- O projeto inclui apenas um teste basico para manter a cobertura baixa de forma intencional.
